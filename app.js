@@ -6,8 +6,12 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var passport = require('passport');
-var jwt = require('passport-jwt');
+var mongoose = require('mongoose');
+var router = express.Router();
 
+//Models
+var User = require('./models/user');
+//Rotas
 var config = require('./config/secret');
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -15,7 +19,7 @@ var users = require('./routes/users');
 var app = express();
 
 //Conectando ao MongoDb
-moongoose.connect(config.database);
+mongoose.connect(config.database);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -27,6 +31,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+//Inicializa passport para o Usuario
+app.use(passport.initialize());
+
+require('./config/passport')(passport);
+
 /**
  * Com o Morgan conseguimos visualizar o Log no Console
  * GET / 200 30.029 ms - 213
@@ -36,7 +46,7 @@ app.use(logger('dev'));
  * criamos as rotas para as devidas URL`s temos só duas
  */
 app.use('/', index);
-app.use('/users', users);
+app.use('/user',users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

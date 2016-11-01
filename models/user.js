@@ -2,7 +2,7 @@
  * Created by jonathanlameira on 01/11/16.
  */
 var mongoose = require('mongoose');
-var bcrypt = require('bcrypt-nodejs');
+var bcrypt = require('bcrypt');
 var crypto = require('crypto');
 
 // Schema User
@@ -22,22 +22,35 @@ var UserSchema = new Schema({
 });
 
 /*  faz um Hash no password depois salva no banco */
-UserSchema.pre('save', function(next) {
+UserSchema.pre('save', function (next) {
     var user = this;
-    if (!user.isModified('password')) return next();
-    bcrypt.genSalt(10, function(err, salt) {
-        if (err) return next(err);
-        bcrypt.hash(user.password, salt, null, function(err, hash) {
-            if (err) return next(err);
-            user.password = hash;
-            next();
+    if (this.isModified('password') || this.isNew) {
+        bcrypt.genSalt(10, function (err, salt) {
+            if (err) {
+                return next(err);
+            }
+            bcrypt.hash(user.password, salt, function(err, hash) {
+                if (err) {
+                    return next(err);
+                }
+                user.password = hash;
+                next();
+            });
         });
-    });
+    } else {
+        return next();
+    }
 });
 
+
 /* Comparar a senha no banco de dados e a que o usuário digitou */
-UserSchema.methods.comparePassword = function(password) {
+UserSchema.methods.comparePassword = function(pw, cb) {
+    bcrypt.compare(pw, this.password, function(err, isMatch) {
+        if (err) {
+            return cb(err);
+        }
+        cb(null, isMatch);
+    });
 };
-return bcrypt.compareSync(password, this.password);
 
 module.exports = mongoose.model('User', UserSchema);

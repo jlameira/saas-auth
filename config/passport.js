@@ -1,43 +1,24 @@
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
+var JwtStrategy = require('passport-jwt').Strategy;
+var ExtractJwt = require('passport-jwt').ExtractJwt;
 var User = require('../models/user');
+var config = require('../config/secret');
 
-// serialize and deserialize
-passport.serializeUser(function(user, done) {
-  done(null, user._id);
-});
+module.exports = function (passport) {
+    var opts = [];
+    opts.jwtFromRequest = ExtractJwt.fromAuthHeader();
+    opts.secretOrKey = config.secret;
 
-passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
-    done(err, user);
-  });
-});
-
-
-//Middleware
-passport.use('local-login', new LocalStrategy({
-  usernameField: 'email',
-  passwordField: 'password',
-  passReqToCallback: true
-}, function(req, email, password, done) {
-  User.findOne({ email: email}, function(err, user) {
-    if (err) return done(err);
-
-    if (!user) {
-      return done(null, false, req.flash('loginMessage', 'No user has been found'));
-    }
-
-    if (!user.comparePassword(password)) {
-      return done(null, false, req.flash('loginMessage', 'Oops! Wrong Password pal'));
-    }
-    return done(null, user);
-  });
-}));
-
-//custom function to validate
-exports.isAuthenticated = function(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.redirect('/login');
-}
+    passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
+        User.findOne({id: jwt_payload.id}, function(err, user) {
+            if (err) {
+                return done(err, false);
+            }
+            if (user) {
+                done(null, user);
+            } else {
+                done(null, false);
+                // ou cria nova conta
+            }
+        });
+    }));
+};
