@@ -1,22 +1,22 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
-var passport = require('passport');
-var mongoose = require('mongoose');
-var router = express.Router();
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const passport = require('passport');
+const mongoose = require('mongoose');
+const router = express.Router();
 
 //Models
-var User = require('./models/user');
+const User = require('./models/user');
 //Rotas
-var config = require('./config/secret');
-var index = require('./routes/index');
-var users = require('./routes/users');
+const config = require('./config/secret');
+const index = require('./routes/index');
+const users = require('./routes/users');
 
-var app = express();
+let app = express();
 
 //Conectando ao MongoDb
 mongoose.connect(config.database);
